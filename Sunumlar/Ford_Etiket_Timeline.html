@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tablo Tabanlı Yatay Gantt Şeması</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .form-container {
+            margin-bottom: 20px;
+            background-color: white;
+            padding: 10px;
+            border-radius: 6px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+        .form-container label {
+            margin-right: 10px;
+            font-size: 14px;
+        }
+        .form-container input {
+            padding: 5px;
+            margin-right: 10px;
+            width: 100px;
+        }
+        .form-container button {
+            padding: 5px 10px;
+            background-color: #FF9F55;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .timeline-table {
+            width: 100%;
+            max-width: 1200px;
+            border-collapse: collapse;
+            background-color: white;
+            border-radius: 6px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            font-size: 10px;
+            position: relative;
+        }
+        .timeline-table th, .timeline-table td {
+            border: 1px solid #ddd;
+            padding: 4px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .timeline-table th:first-child, .timeline-table td:first-child {
+            width: 100px;
+            text-align: left;
+            font-weight: bold;
+            background-color: #f8f9fa;
+        }
+        .timeline-table th {
+            background-color: #e9ecef;
+            font-size: 9px;
+        }
+        .ford { background-color: #007bff; color: white; }
+        .other { background-color: #28a745; color: white; }
+        .task { background-color: #ffc107; color: black; }
+        .mola { background-color: #dc3545; color: white; }
+        .empty { background-color: #f4f4f4; }
+        @media (max-width: 1200px) {
+            .timeline-table {
+                max-width: 90%;
+                font-size: 9px;
+            }
+            .timeline-table th:first-child, .timeline-table td:first-child {
+                width: 80px;
+            }
+            .timeline-table th {
+                font-size: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h2>Tablo Tabanlı Yatay Gantt Şeması</h2>
+    <div class="form-container">
+        <label for="fordTime">Ford Kutu Başına Süre (saniye):</label>
+        <input type="number" id="fordTime" value="15" min="1">
+        <label for="prepTime">Diğer Müşteriler Palet Başına Hazırlık Süresi (dakika):</label>
+        <input type="number" id="prepTime" value="5" min="1">
+        <button onclick="updateTimeline()">Güncelle</button>
+    </div>
+    <table class="timeline-table" id="timeline">
+        <tr>
+            <th></th>
+            <th>08:00</th><th>08:30</th><th>09:00</th><th>09:30</th><th>10:00</th><th>10:30</th>
+            <th>11:00</th><th>11:30</th><th>12:00</th><th>12:30</th><th>13:00</th><th>13:30</th>
+            <th>14:00</th><th>14:30</th><th>15:00</th><th>15:30</th><th>16:00</th><th>16:30</th>
+            <th>17:00</th><th>17:30</th><th>18:00</th><th>18:30</th><th>19:00</th><th>19:30</th>
+            <th>20:00</th><th>20:30</th><th>21:00</th><th>21:30</th><th>22:00</th><th>22:30</th>
+            <th>23:00</th><th>23:30</th><th>00:00</th>
+        </tr>
+        <tr>
+            <td>Temizlik</td>
+            <td class="task" colspan="2">08:00-08:30</td>
+            <td class="empty" colspan="31"></td>
+        </tr>
+        <tr>
+            <td>ASAKAI</td>
+            <td class="empty" colspan="1"></td>
+            <td class="task" colspan="1">08:30-08:45</td>
+            <td class="empty" colspan="31"></td>
+        </tr>
+        <tr>
+            <td>Mola (Sabah 1)</td>
+            <td class="empty" colspan="8"></td>
+            <td class="mola" colspan="1">10:00-10:15</td>
+            <td class="empty" colspan="24"></td>
+        </tr>
+        <tr>
+            <td>Depo Görevi</td>
+            <td class="empty" colspan="15"></td>
+            <td class="task" colspan="2">11:30-12:00</td>
+            <td class="empty" colspan="16"></td>
+        </tr>
+        <tr>
+            <td>Mola (Sabah 2)</td>
+            <td class="empty" colspan="17"></td>
+            <td class="mola" colspan="2">12:15-12:45</td>
+            <td class="empty" colspan="14"></td>
+        </tr>
+        <tr>
+            <td>Ford Aracı</td>
+            <td class="empty" colspan="16"></td>
+            <td class="ford" colspan="1">12:00</td>
+            <td class="empty" colspan="16"></td>
+        </tr>
+        <tr>
+            <td>Malzeme Toplama</td>
+            <td class="empty" colspan="20"></td>
+            <td class="task" colspan="3">13:00-13:45</td>
+            <td class="empty" colspan="10"></td>
+        </tr>
+        <tr>
+            <td>Ford Etiketleme</td>
+            <td class="empty" colspan="24"></td>
+            <td class="ford" id="fordEtiketleme" colspan="4">14:00-15:57</td>
+            <td class="empty" colspan="5"></td>
+        </tr>
+        <tr>
+            <td>Diğer Müşteriler</td>
+            <td class="empty" colspan="3"></td>
+            <td class="other" id="digerMusteriler1" colspan="21">08:45-14:00</td>
+            <td class="empty" colspan="4"></td>
+            <td class="other" id="digerMusteriler2" colspan="5">15:57-24:00</td>
+        </tr>
+        <tr>
+            <td>Mola (Akşam 1)</td>
+            <td class="empty" colspan="48"></td>
+            <td class="mola" colspan="2">20:00-20:30</td>
+            <td class="empty" colspan="3"></td>
+        </tr>
+        <tr>
+            <td>Mola (Akşam 2)</td>
+            <td class="empty" colspan="56"></td>
+            <td class="mola" colspan="1">22:00-22:15</td>
+            <td class="empty" colspan="2"></td>
+        </tr>
+    </table>
+
+    <script>
+        function updateTimeline() {
+            const fordTime = parseFloat(document.getElementById('fordTime').value) || 15;
+            const prepTime = parseFloat(document.getElementById('prepTime').value) || 5;
+
+            // Ford etiketleme süresi hesaplama (1.400 kutu, 3 kişi)
+            const totalFordSeconds = 1400 * fordTime;
+            const fordMinutes = totalFordSeconds / 60 / 3;
+            const startFord = new Date('2025-05-27T14:00:00');
+            const endFord = new Date(startFord.getTime() + fordMinutes * 60 * 1000);
+            const fordEndTime = endFord.toTimeString().slice(0, 5);
+            const fordColspan = Math.ceil(fordMinutes / 30) || 2; // 30 dakikalık aralıklar
+
+            // Kalan süre hesaplama
+            const totalMinutes = 960; // 08:00-24:00
+            const molaMinutes = 90; // 10:00-10:15, 12:15-12:45, 20:00-20:30, 22:00-22:15
+            const otherTasks = 120; // Depo (30 dk) + Toplama (45 dk) + Temizlik (30 dk) + ASAKAI (15 dk)
+            const netMinutes = totalMinutes - molaMinutes - otherTasks;
+            const fordUsedMinutes = fordMinutes;
+            const remainingMinutes = netMinutes - fordUsedMinutes;
+
+            // Diğer müşteriler için kapasite
+            const otherTimePerPallet = prepTime + (40 * 10 / 60); // 5 dk hazırlık + 6.67 dk etiketleme
+            const pallets = Math.floor(remainingMinutes / otherTimePerPallet);
+            const totalBoxes = pallets * 40;
+
+            // Timeline'ı güncelle
+            document.getElementById('fordEtiketleme').setAttribute('colspan', fordColspan);
+            document.getElementById('fordEtiketleme').innerHTML = `14:00-${fordEndTime}`;
+            document.getElementById('digerMusteriler1').setAttribute('colspan', 24 - 3);
+            document.getElementById('digerMusteriler1').innerHTML = `08:45-14:00`;
+            document.getElementById('digerMusteriler2').setAttribute('colspan', 33 - (24 + fordColspan));
+            document.getElementById('digerMusteriler2').innerHTML = `${fordEndTime}-24:00 (${totalBoxes} kutu, ${pallets} palet)`;
+        }
+    </script>
+</body>
+</html>

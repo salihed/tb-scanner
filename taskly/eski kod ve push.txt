@@ -760,3 +760,11 @@ elif menu == "📊 İstatistikler":
 # Footer
 st.markdown("---")
 st.markdown("💡 **İpucu:** Görev bilgilerini hızlıca girmek için virgülle ayırabilirsiniz: `Görev Adı, Tarih, Kategori, Sorumlu, Notunuz`. Daha detaylı giriş için anahtar kelimeleri kullanın (örn: `Termin: GG.AA.YYYY`).")
+
+
+
+PUSH
+cd taskly
+git add .
+git commit -m "İlk Streamlit uygulaması ve veri dosyaları"
+git push origin main

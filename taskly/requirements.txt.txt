@@ -1,4 +1,0 @@
-streamlit
-pandas
-openpyxl # Excel dışa aktarımı için
-altair # İstatistikler kısmındaki grafikler için

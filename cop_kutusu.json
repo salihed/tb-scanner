@@ -1,0 +1,58 @@
+[
+  {
+    "id": 1,
+    "gorev": "Streç Sarım Hattı Bakımı",
+    "kategori": null,
+    "termin": "2025-06-02T00:00:00",
+    "periyot": null,
+    "sorumlu": "dursunA, şimdilik notum yok",
+    "not": "Görev: Streç Sarım Hattı Bakımı\ntermin: 02.06.2025, sorumlu dursunA, şimdilik notum yok\n📝 Ek: bundaki sorumludaki şimdilik notum yok cümlesini sil\n\n📝 Ek: bundaki sorumludaki şimdilik notum yok cümlesini sil\n",
+    "durum": "bekliyor",
+    "olusturma": "2025-06-02T18:45:19.675925"
+  },
+  {
+    "id": 3,
+    "gorev": "Aksa jeneratör bakımı yap, 04.06.2025 tamamla, sorumlu MuratO",
+    "kategori": null,
+    "termin": "2025-06-04T00:00:00",
+    "periyot": null,
+    "sorumlu": "MuratO",
+    "not": "Aksa jeneratör bakımı yap, 04.06.2025 tamamla, sorumlu MuratO",
+    "durum": "bekliyor",
+    "olusturma": "2025-06-02T20:17:34.085459"
+  },
+  {
+    "id": 6,
+    "gorev": "EKX bakım yap, 04.06.2025, Bakım, MuratO",
+    "kategori": null,
+    "termin": "2025-06-04T00:00:00",
+    "periyot": null,
+    "sorumlu": null,
+    "not": "EKX bakım yap, 04.06.2025, Bakım, MuratO",
+    "durum": "bekliyor",
+    "olusturma": "2025-06-02T20:30:52.007739"
+  },
+  {
+    "id": 5,
+    "gorev": "EKX Bakım, 5.06.2025, bakım, GokselA",
+    "kategori": null,
+    "termin": "2025-06-05T00:00:00",
+    "periyot": null,
+    "sorumlu": null,
+    "not": "EKX Bakım, 5.06.2025, bakım, GokselA",
+    "durum": "bekliyor",
+    "olusturma": "2025-06-02T20:29:31.974372"
+  },
+  {
+    "id": 4,
+    "gorev": "streç sarım hattı bakımı tamamlandı",
+    "kategori": null,
+    "termin": null,
+    "periyot": null,
+    "sorumlu": null,
+    "not": "streç sarım hattı bakımı tamamlandı",
+    "durum": "tamamlandi",
+    "olusturma": "2025-06-02T20:19:19.120821",
+    "tamamlanma": "2025-06-02T20:20:00.321594"
+  }
+]

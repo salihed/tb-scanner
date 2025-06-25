@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "gorev": "MX*X 195 Bakım",
+    "kategori": "Bakım",
+    "termin": "2025-06-03T00:00:00",
+    "periyot": null,
+    "sorumlu": "GokselA",
+    "not": "Tekerlek değiştir",
+    "durum": "silindi",
+    "olusturma": "2025-06-02T23:47:20.274299",
+    "tamamlanma": "2025-06-03T00:02:52.399366"
+  },
+  {
+    "id": 2,
+    "gorev": "ekx-x arıza",
+    "kategori": "arıza",
+    "termin": "2025-06-04T00:00:00",
+    "periyot": null,
+    "sorumlu": "murato",
+    "not": "yok",
+    "durum": "silindi",
+    "olusturma": "2025-06-03T00:01:41.048282",
+    "tamamlanma": "2025-06-03T09:50:17.494073"
+  },
+  {
+    "id": 3,
+    "gorev": "Tezgah siparişi",
+    "kategori": "SAT",
+    "termin": "2025-06-06T00:00:00",
+    "periyot": null,
+    "sorumlu": "RabiaA",
+    "not": "Tezgah siparişi, 06.06.2025,SAT,RabiaA",
+    "durum": "bekliyor",
+    "olusturma": "2025-06-03T00:06:36.544461",
+    "tamamlanma": null
+  },
+  {
+    "id": 4,
+    "gorev": "ekx bakım",
+    "kategori": "bakım",
+    "termin": "2025-06-04T00:00:00",
+    "periyot": null,
+    "sorumlu": "murato",
+    "not": "",
+    "durum": "silindi",
+    "olusturma": "2025-06-03T09:36:25.404918",
+    "tamamlanma": null
+  },
+  {
+    "id": 5,
+    "gorev": "Rampa bakım",
+    "kategori": "arıza",
+    "termin": "2025-05-04T00:00:00",
+    "periyot": null,
+    "sorumlu": "goksela",
+    "not": "",
+    "durum": "bekliyor",
+    "olusturma": "2025-06-03T10:20:27.151264",
+    "tamamlanma": null
+  }
+]

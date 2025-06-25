@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>LABELGUARD Projesi Sunumu</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .slide-container {
+            width: 100%;
+            max-width: 900px;
+            margin: 20px auto;
+        }
+        .slide {
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 40px;
+            margin-bottom: 30px;
+            border-radius: 5px;
+            page-break-after: always;
+        }
+        .title-slide {
+            text-align: center;
+            background-color: #003366;
+            color: white;
+            padding: 60px 40px;
+        }
+        h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 28px;
+            color: #003366;
+            border-bottom: 2px solid #003366;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        .title-slide h1 {
+            font-size: 42px;
+            margin-bottom: 30px;
+        }
+        .title-slide h2 {
+            color: #ffffff;
+            border-bottom: none;
+            font-weight: normal;
+            font-size: 24px;
+        }
+        ul {
+            font-size: 20px;
+            line-height: 1.6;
+        }
+        p {
+            font-size: 20px;
+            line-height: 1.6;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #003366;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .two-column {
+            display: flex;
+            justify-content: space-between;
+        }
+        .column {
+            width: 48%;
+        }
+        .highlight-box {
+            background-color: #e6f2ff;
+            border-left: 4px solid #003366;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .footer {
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+            margin-top: 20px;
+        }
+        @media print {
+            .slide {
+                page-break-after: always;
+                box-shadow: none;
+                border: none;
+            }
+            body {
+                background-color: white;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <!-- Kapak Slaytı -->
+        <div class="slide title-slide">
+            <h1>LABELGUARD</h1>
+            <h2>OTOMATİK ETİKET KONTROL HATTI AKTİFLEŞTİRME PROJESİ</h2>
+            <p style="margin-top: 60px; font-size: 18px;">İzmir Lojistik Merkezi</p>
+            <p style="font-size: 18px;">24.01.2025 – 25.02.2025</p>
+        </div>
+
+        <!-- Proje Genel Bilgileri -->
+        <div class="slide">
+            <h2>Proje Genel Bilgileri</h2>
+            <ul>
+                <li><strong>Proje Adı:</strong> Etiketleme Hattı Aktifleştirme Projesi</li>
+                <li><strong>Proje Tarihi:</strong> 24.01.2025 – Q3 2025</li>
+                <li><strong>Proje Yeri:</strong> İzmir Lojistik Merkezi</li>
+                <li><strong>Proje Sorumluları:</strong> Salih Doğrubak, Hüseyin Dinçer, Alican Tamer</li>
+                <li><strong>Teknik Destek:</strong> SICK Yetkilileri, Norm Bakım Müdürlüğü </li>
+            </ul>
+        </div>
+
+        <!-- Projenin Amacı ve Kapsamı -->
+        <div class="slide">
+            <h2>Projenin Amacı ve Kapsamı</h2>
+            <p><strong>Amaç:</strong> Etiketleme hattının aktif olarak çalışmasının sağlanması ve hat üzerindeki teknik sorunların giderilmesi.</p>
+            <div class="highlight-box">
+                <h3>Kapsam:</h3>
+                <ul>
+                    <li>Kamera sistemlerinin optimizasyonu</li>
+                    <li>Barkod okuma sorunlarının çözümü</li>
+                    <li>Yazılım iyileştirmeleri</li>
+                    <li>Hat üzerindeki fiziksel düzenlemeler</li>
+                    <li>İzlenebilirlik sisteminin kurulması</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Mevcut Durum Analizi -->
+        <div class="slide">
+            <h2>Mevcut Durum Analizi</h2>
+            <div class="highlight-box">
+                <h3>Tespit Edilen Sorunlar:</h3>
+                <ul>
+                    <li>Hat üzerindeki kameraların okutma sorunları</li>
+                    <li>Hat-kamera standının sabitlenme ihtiyacı</li>
+                    <li>Yazılımın çoklu referanslı etiketlerde eşleştirme sorunları</li>
+                    <li>Etiketlerin barkodlarında kamera flaşı kaynaklı okuma sorunları</li>
+                    <li>Hat duruşlarına neden olan sensör sorunları</li>
+                    <li>Kutuların hat üzerinde ortalanma sorunları</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Çözüm Yaklaşımı -->
+        <div class="slide">
+            <h2>Çözüm Yaklaşımı</h2>
+            <div class="two-column">
+                <div class="column">
+                    <h3>Teknik Çözümler:</h3>
+                    <ul>
+                        <li>"Işık kutusu" ve Yüksek RGB özellikli LED kurulumu</li>
+                        <li>LED aydınlatma sisteminin test edilmesi</li>
+                        <li>Yazılım güncellemeleri</li>
+                        <li>Hat üzerinde fiziksel düzenlemeler</li>
+                        <li>Barkod okuyucu entegrasyonu</li>
+                    </ul>
+                </div>
+                <div class="column">
+                    <h3>Yazılım İyileştirmeleri:</h3>
+                    <ul>
+                        <li>TB okutma ekran tasarımı</li>
+                        <li>Eşleşmeyen barkodların ekranda belirtilmesi</li>
+                        <li>Kullanıcı yetkilendirme sistemi</li>
+                        <li>İzlenebilirlik raporlama sistemi</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Proje Aşamaları -->
+        <div class="slide">
+            <h2>Proje Aşamaları</h2>
+            <div class="highlight-box">
+                <h3>Aşama 1: Durum Tespiti ve Analiz (20-24 Ocak 2025)</h3>
+                <ul>
+                    <li>SICK firma yetkilileri ile hat üzerinde inceleme</li>
+                    <li>Kamera ve yazılım sorunlarının tespiti</li>
+                    <li>Çözüm önerilerinin belirlenmesi</li>
+                </ul>
+            </div>
+            <div class="highlight-box">
+                <h3>Aşama 2: Çözüm Tasarımı (24-29 Ocak 2025)</h3>
+                <ul>
+                    <li>Işık kutusu teknik şartnamesinin hazırlanması</li>
+                    <li>Tedarikçi görüşmeleri ve fiyat teklifi alınması</li>
+                </ul>
+            </div>
+            <div class="highlight-box">
+                <h3>Aşama 3: Uygulama ve Test (Şubat-Nisan 2025)</h3>
+                <ul>
+                    <li>LED aydınlatma testleri</li>
+                    <li>Yazılım güncellemeleri</li>
+                    <li>Hat üzerinde fiziksel düzenlemeler</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Proje Durumu ve İlerleme -->
+        <div class="slide">
+            <h2>Proje Durumu ve İlerleme</h2>
+            <div class="two-column">
+                <div class="column">
+                    <h3>Tamamlanan İşler:</h3>
+                    <ul>
+                        <li>Hat ve kamera standının sabitlenmesi</li>
+                        <li>Kutunun ortalanması için kılavuz yapılması</li>
+                        <li>Işık kutusu için teklif ve satın alma süreci</li>
+                        <li>Demo LED'ler ile kameranın okuma performansının izlenmesi</li>
+                        <li>TB okutma ekran tasarımının yapılması</li>
+                    </ul>
+                </div>
+                <div class="column">
+                    <h3>Devam Eden İşler:</h3>
+                    <ul>
+                        <li>Hatta yapılan işin izlenebilirliğini sağlayacak raporlama sistemi</li>
+                        <li>Barkod okuyucu entegrasyonu</li>
+                    </ul>
+                    <h3>Bekleyen İşler:</h3>
+                    <ul>
+                        <li>TB alanında kullanıcı bilgisinin eklenmesi</li>
+                        <li>Hat duruş bilgi girişi geliştirmeleri</li>
+                        <li>3. kamera eklenmesi değerlendirmesi</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kapasite Hesabı -->
+        <div class="slide">
+            <h2>Kapasite Hesabı</h2>
+            <table>
+                <tr>
+                    <th>Aylar</th>
+                    <th>Toplam Kutu Sayısı</th>
+                    <th>Ortalama Sn/Kutu</th>
+                </tr>
+                <tr>
+                    <td>Şubat </td>
+                    <td>3.030</td>
+                    <td>11,33</td>
+                </tr>
+                <tr>
+                    <td>Mart</td>
+                    <td>10.029</td>
+                    <td>10,62</td>
+                </tr>
+                <tr>
+                    <td>Nisan</td>
+                    <td>16.234</td>
+                    <td>9,81</td>
+                </tr>
+                <tr>
+                    <td>Mayıs (08.05<)</td>
+                    <td>646</td>
+                    <td>12,63</td>
+                </tr>
+                <tr>
+                    <td>Genel Toplam</td>
+                    <td>29.939</td>
+                    <td>10,34</td>
+                </tr>
+            </table>
+            <p><strong>Mevcut Durumda Kapasite Kullanım:</strong> %41 (1V Kapasite:48.384) </p>
+        </div>
+
+        <!-- FAZ 2 Hedefleri -->
+        <div class="slide">
+            <h2>FAZ 2 Hedefleri</h2>
+            <div class="highlight-box">
+                <ul>
+                    <li>Hat kullanımının arttırılması</li>
+                    <li>Yapışkanlı etiket takma operasyonunun mekanikleştirilmesi</li>
+                    <li>Palet dizme robotu araştırması</li>
+                </ul>
+            </div>
+        </div>
+
+        

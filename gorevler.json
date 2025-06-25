@@ -1,0 +1,36 @@
+[
+  {
+    "id": 2,
+    "gorev": "mxx bakım",
+    "kategori": "bakım",
+    "termin": "2025-06-03T00:00:00",
+    "periyot": null,
+    "sorumlu": "göksela",
+    "not": "görev: mxx bakım\ntermin: 03.06.2025\nkategori: bakım\nsorumlu: göksela",
+    "durum": "bekliyor",
+    "olusturma": "2025-06-02T18:46:52.790345"
+  },
+  {
+    "id": 7,
+    "gorev": "MX-X 195 Bakım",
+    "kategori": "Bakım",
+    "termin": "2025-06-06T00:00:00",
+    "periyot": null,
+    "sorumlu": "ZeynalA",
+    "not": "MX-X 195 Bakım, 06.06.2025, Bakım, ZeynalA, 1 YIL\n📝 Ek: Zincir kontrol edilecek\n📝 Ek: Zincir kontrol edilecek",
+    "durum": "bekliyor",
+    "olusturma": "2025-06-02T20:36:50.019512"
+  },
+  {
+    "id": 3,
+    "gorev": "Matematik Ödevi syf 15 yap",
+    "kategori": "Ödev",
+    "termin": "2025-06-03T00:00:00",
+    "periyot": null,
+    "sorumlu": "BeyzaD",
+    "not": "Matematik Ödevi syf 15 yap, 03.06.2025, Ödev, BeyzaD",
+    "durum": "tamamlandi",
+    "olusturma": "2025-06-02T21:06:51.336743",
+    "tamamlanma": "2025-06-02T21:07:24.519192"
+  }
+]

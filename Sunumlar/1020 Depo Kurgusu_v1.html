@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1020 EWM Kalite Depo Stokları Projesi</title>
+    <style>
+        body, html {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            box-sizing: border-box;
+        }
+        .slide-container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .slide {
+            border-radius: 8px;
+            background: linear-gradient(to bottom, #ffffff 0%, #f9f9f9 100%);
+            border: 1px solid #ddd;
+            width: 100%;
+            max-width: 100vw;
+            height: 100%;
+            max-height: 100vh;
+            margin: 0;
+            position: relative;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            display: none;
+            box-sizing: border-box;
+        }
+        .slide.active {
+            display: block;
+        }
+        .slide-content {
+            padding: 2vw;
+            height: calc(100% - 4vw);
+            overflow: hidden;
+            font-size: calc(14px + 0.5vw);
+        }
+        .title-slide .slide-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .header {
+            padding: 1vw;
+            text-align: center;
+        }
+        .content {
+            padding: 1vw;
+            font-size: calc(14px + 0.5vw);
+        }
+        h1 {
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            background: linear-gradient(to right, #005b96, #03396c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: #005b96;
+            font-size: calc(24px + 2vw);
+            margin-bottom: 1vw;
+            text-align: center;
+        }
+        h2 {
+            color: #03396c;
+            font-size: calc(20px + 1.5vw);
+            margin-bottom: 1vw;
+        }
+        h3 {
+            color: #6497b1;
+            font-size: calc(16px + 1vw);
+            margin-bottom: 0.8vw;
+        }
+        p, li {
+            font-size: calc(14px + 0.5vw);
+            line-height: 1.5;
+            margin-bottom: 0.5vw;
+            overflow-wrap: break-word;
+        }
+        ul {
+            margin-left: 1vw;
+        }
+        .two-column {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            padding: 1vw;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            gap: 1vw;
+        }
+        .column {
+            width: 48%;
+        }
+        .left-column h3 {
+            color: #c00000; /* Kırmızı */
+        }
+        .right-column h3 {
+            color: #007020; /* Yeşil */
+        }
+        .completed, .status-complete {
+            background-color: rgba(0, 128, 0, 0.1);
+            border-radius: 4px;
+            padding: 0.5vw;
+            color: #008000; /* Yeşil */
+        }
+        .ongoing, .status-progress {
+            background-color: rgba(255, 153, 0, 0.1);
+            border-radius: 4px;
+            padding: 0.5vw;
+            color: #ff9900; /* Turuncu */
+        }
+        .pending, .status-pending {
+            background-color: rgba(255, 0, 0, 0.1);
+            border-radius: 4px;
+            padding: 0.5vw;
+            color: #ff0000; /* Kırmızı */
+        }
+        .status-suggestion {
+            background-color: rgba(173, 216, 230, 0.3);
+            border-radius: 4px;
+            padding: 0.5vw;
+            border: 1px solid #add8e6;
+        }
+        .status-box {
+            margin-bottom: 1vw;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+        }
+        .controls {
+            position: fixed;
+            bottom: 1vw;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 1vw;
+            z-index: 100;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 0.5vw 1vw;
+            border-radius: 30px;
+            backdrop-filter: blur(5px);
+        }
+        .control-btn {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            padding: 0.5vw 1vw;
+            background-color: #005b96;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: calc(12px + 0.5vw);
+        }
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+            background-color: #03396c;
+        }
+        .control-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+        .slide-number {
+            position: fixed;
+            bottom: 1vw;
+            right: 1vw;
+            font-size: calc(10px + 0.5vw);
+            background-color: rgba(0, 91, 150, 0.8);
+            color: white;
+            padding: 0.3vw 0.6vw;
+            border-radius: 20px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        table {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1vw 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 0.6vw;
+            text-align: left;
+            font-size: calc(12px + 0.5vw);
+        }
+        th {
+            background-color: #005b96;
+            color: white;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(30%, 1fr));
+            gap: 1vw;
+            margin-top: 1vw;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            padding: 1vw;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card.solution {
+            background-color: rgba(0, 128, 0, 0.1);
+            border: 1px solid #008000;
+        }
+        .card.target {
+            background-color: rgba(173, 216, 230, 0.3);
+            border: 1px solid #add8e6;
+        }
+        .card p {
+            margin: 0;
+            font-size: calc(14px + 0.5vw);
+            line-height: 1.5;
+        }
+        @media (max-width: 768px) {
+            .slide-content, .content {
+                padding: 3vw;
+                font-size: calc(12px + 0.5vw);
+            }
+            .card-container {
+                grid-template-columns: 1fr;
+            }
+            .two-column {
+                flex-direction: column;
+                gap: 2vw;
+            }
+            .column {
+                width: 100%;
+            }
+        }
+        @media (max-width: 480px) {
+            .slide-content, .content {
+                padding: 4vw;
+                font-size: calc(10px + 0.5vw);
+            }
+            h1 {
+                font-size: calc(18px + 2vw);
+            }
+            h2 {
+                font-size: calc(16px + 1.5vw);
+            }
+            h3 {
+                font-size: calc(14px + 1vw);
+            }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .slide.active {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        .slide-content, .content {
+            opacity: 0;
+            animation: fadeIn 0.7s ease-out 0.2s forwards;
+        }
+        li, .card {
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out forwards;
+            animation-delay: calc(0.1s * var(--animation-order, 1));
+            margin-bottom: 0.5vw;
+            position: relative;
+            padding-left: 0.3vw;
+            transition: all 0.3s ease;
+        }
+        li:hover, .card:hover {
+            transform: translateX(5px);
+        }
+        .status-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <!-- Slayt 1: Başlık -->
+        <div class="slide title-slide active" id="slide1">
+            <div class="slide-content">
+                <h1>1020 EWM Kalite Depo Stokları Projesi</h1>
+                <h3>Salih Doğrubak</h3>
+                <h3>Mayıs 2025</h3>
+            </div>
+        </div>
+
+        <!-- Slayt 2: Proje Özeti -->
+        <div class="slide" id="slide2">
+            <div class="slide-content">
+                <h2>Proje Özeti</h2>
+                <p>Bu sunumda, müşteri iadelerinin kalite kontrol süreçlerinde yaşanan <strong>B6 statüsü sorunları</strong> ve bunların çözümüne yönelik <strong>1020 EWM Kalite Depo Stokları projesi</strong> ele alınmaktadır.</p>
+                <div class="card-container">
+                    <div class="card" style="--animation-order: 1;">
+                        <p>B6 statüsündeki malzemelerin depolar arası transferinde yaşanan zorluklar</p>
+                    </div>
+                    <div class="card" style="--animation-order: 2;">
+                        <p>Müşteri iadelerinin stoklara alınırken oluşan riskler</p>
+                    </div>
+                    <div class="card" style="--animation-order: 3;">
+                        <p>Faz farkı nedeniyle müşteriye yanlış sevk riski</p>
+                    </div>
+                    <div class="card" style="--animation-order: 4;">
+                        <p>Kalite kontrol süreçlerinin standardizasyonu</p>
+                    </div>
+                    <div class="card solution" style="--animation-order: 5;">
+                        <p><strong>Çözüm:</strong> 1020 deposunda stokların merkezi yönetimi ve güvenli transferi</p>
+                    </div>
+                    <div class="card target" style="--animation-order: 6;">
+                        <p><strong>Hedef:</strong> Güvenli ve verimli bir kalite kontrol süreci</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slayt 3: Mevcut Durum ve Hedeflenen Durum -->
+        <div class="slide" id="slide3">
+            <div class="slide-content">
+                <h2>Mevcut Durum ve Hedeflenen Durum</h2>
+                <div class="two-column">
+                    <div class="column left-column">
+                        <h3>Mevcut Durum:</h3>
+                        <ul>
+                            <li>B6 statüsüne tahditsiz olarak alınan stokların malzeme hareketinde yaşanan zorluklar</li>
+                            <li>Malzeme B6 statüsündeyken depolar arasında transfer edilemediği için B6 statüsünden çıkartılması sorunu</li>
+                            <li>B6'dan çıkarılan malzemelerin yanlışlıkla müşteriye sevk edilme riski</li>
+                            <li>İade malzemelerin EWM'e girdiğinde F2 kullanılabilir stokta girmesi ve kalitecinin sonradan B6 statüsüne alması gerekliliği</li>
+                            <li>Faz farkı nedeniyle müşteriye sevk riski bulunması</li>
+                        </ul>
+                    </div>
+                    <div class="column right-column">
+                        <h3>Hedeflenen Durum:</h3>
+                        <ul>
+                            <li>Tüm müşteri iadelerinin ve bloke malzemelerin 1020 EWM Kalite deposunda merkezi yönetimi</li>
+                            <li>K2 (1020) statüsündeki malzemelerin üretime güvenli transferi</li>
+                            <li>Müşteriye yanlış sevk riskinin ortadan kaldırılması</li>
+                            <li>İade malzemelerin doğrudan K2 (1020) statüsünde sisteme girişi</li>
+                            <li>Faz farkından kaynaklanan risklerin eliminasyonu</li>
+                            <li>Standartlaştırılmış kalite kontrol süreçleri</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slayt 4: Proje Kapsamı -->
+        <div class="slide" id="slide4">
+            <div class="slide-content">
+                <h2>Proje Kapsamı</h2>
+                <ul>
+                    <li>Ticari veya kalite şikayeti sebebiyle gelen müşteri iadelerinin 1020 EWM Kalite Depoya giriş-çıkış sürecinin ve ilgili operasyonel akışların nasıl yönetileceği tanımlanmaktadır.</li>
+                    <li>Özellikle B6 statüsündeki malzemelerin yönetimi ve faz farkından kaynaklanan risklerin ortadan kaldırılması için gerekli süreçler tasarlanmıştır.</li>
+                    <li>Kalite kontrol süreçlerinin EWM ile entegrasyonu sağlanarak depo operasyonlarının verimliliği artırılacak ve K2 (1020) statüsündeki malzemelerin güvenli yönetimi sağlanacaktır.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slayt 5: Tamamlanan İşler -->
+        <div class="slide" id="slide5">
+            <div class="slide-content">
+                <h2>Tamamlanan İşler</h2>
+                <ul>
+                    <li class="completed">1020 depoları kuruldu (K2)</li>
+                    <li class="completed">EWM F2 (1010) den K2 (1020) ye alma senaryosu (F2>>K2)</li>
+                    <li class="completed">MM depodan 1020 depoya giriş senaryosu (MM>>K2)</li>
+                    <li class="completed">Üretime çıkış senaryosu (K2>>MM)</li>
+                    <li class="completed">Müşteriye çıkış senaryosu (K2>>F2)</li>
+                    <li class="completed">Hurdaya çıkış senaryosu (K2>>MM)</li>
+                    <li class="completed">Tedarikçiye iade senaryosu</li>
+                    <li class="completed">Fason senaryosu</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slayt 6: Devam Eden İşler -->
+        <div class="slide" id="slide6">
+            <div class="slide-content">
+                <h2>Devam Eden İşler</h2>
+                <ul>
+                    <li class="ongoing">Müşteri İadesi senaryosu için kurgu hazırlandı ve kullanıcı dokümanı hazırlandı (canlı uygulamalarda hata alınıyor, IT ile görüşmeler devam ediyor)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slayt 7: Açık Konular -->
+        <div class="slide" id="slide7">
+            <div class="slide-content">
+                <h2>Açık Konular</h2>
+                <ul>
+                    <li class="pending">ZQM0800 TI kodu aktif değil (Sorumlu: Kalite)</li>
+                    <li class="pending">Depoda açık teslimatı olan malzemeleri K2 statüsüne alma konusu açık</li>
+                    <li class="pending">Depo mal çıkışı yapılmış, evrakları hazırlanmış, araca yüklemeyi bekleyen malzemelerde malzemeyi durdurma süreci açık</li>
+                    <li class="pending">Bloke sürecine girmiş, kullanılabilire alınmış, bazı müşterilere gönderilemez iken bazı müşterilere gönderilebilir durumda olan malzemelerin kurgusu yok (rezervasyon değişikliği gerekiyor)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slayt 8: Kalite Tarafından Değerlendirilmesi Gereken Konular -->
+        <div class="slide" id="slide8">
+            <div class="slide-content">
+                <h2>Kalite Tarafından Değerlendirilecek Konular</h2>
+                <ul>
+                    <li class="pending">Üretimden depolara sevk edilen nakil stoklarında olan malzemelerin EWM'e girmeden blokeye alınması</li>
+                    <li class="pending">Tedarikçiden gelen malzemelerin Giriş Kalite Kontrolü (GKK) sürecinde uygunsuz bulunması durumunda, Q4 statüsüne düşen malzemelerin blokaj sürecinin 1020 depo üzerinden yönetimi</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slayt 9: Öneriler -->
+        <div class="slide" id="slide9">
+            <div class="slide-content">
+                <h2>Öneriler</h2>
+                <h3>Robot Sistemi ile Blokaj Yönetimi:</h3>
+                <p>Blokajdan çıkarma işleminin kalite onayı ile POST ekranından (K2>F2) stok türüne alınarak yapılması yerine, bir robot sistemi aracılığıyla e-posta gönderilerek yönetilmesi önerilmektedir.</p>
+                <ul>
+                    <li>İşlem hatalarının önüne geçilecek</li>
+                    <li>Depo ekibi aynı zamanda bilgilendirilerek malzemenin kalite bölgesinden çıkartılması sağlanacak</li>
+                    <li>Süreç standartlaştırılacak</li>
+                    <li>Robot işlemi yaptığında MB51'den ilgili malzeme hareketinde D_ROBOTK kullanıcısı görülecek</li>
+                    <li>İşlemi hangi kullanıcının istediği bilgisi SAP'de tutulamayacak, loglar RPA ekibinden ayrıca talep edilmeli</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slayt 10: Zaman Çizelgesi -->
+        <div class="slide" id="slide10">
+            <div class="slide-content">
+                <h2>Zaman Çizelgesi</h2>
+                <table>
+                    <tr>
+                        <th>Tarih</th>
+                        <th>Aşama</th>
+                        <th>Durum</th>
+                    </tr>
+                    <tr>
+                        <td>Önceki Dönem</td>
+                        <td>1020 Depolarının Kurulumu</td>
+                        <td class="completed">Tamamlandı</td>
+                    </tr>
+                    <tr>
+                        <td>Önceki Dönem</td>
+                        <td>EWM ve MM Depo Entegrasyonları</td>
+                        <td class="completed">Tamamlandı</td>
+                    </tr>
+                    <tr>
+                        <td>Önceki Dönem</td>
+                        <td>Çıkış Senaryoları (Üretim, Müşteri, Hurda, Tedarikçi, Fason)</td>
+                        <td class="completed">Tamamlandı</td>
+                    </tr>
+                    <tr>
+                        <td>Haziran 2025</td>
+                        <td>Müşteri İadesi Senaryosu</td>
+                        <td class="ongoing">Devam Ediyor</td>
+                    </tr>
+                    <tr>
+                        <td>() 2025</td>
+                        <td>ZQM0800 TI Kodu Aktivasyonu</td>
+                        <td class="pending">Beklemede</td>
+                    </tr>
+                    <tr>
+                        <td>() 2025</td>
+                        <td>Açık Konuların Çözümü</td>
+                        <td class="pending">Beklemede</td>
+                    </tr>
+                    <tr>
+                        <td>() 2025</td>
+                        <td>Tam Geçiş</td>
+                        <td class="pending">Beklemede</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Slayt 11: Teşekkürler -->
+        <div class="slide" id="slide11">
+            <div class="slide-content title-slide">
+                <h1>Teşekkürler</h1>
+                <h3>Sorularınız?</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kontroller -->
+    <div class="controls">
+        <button class="control-btn" id="prev-btn" aria-label="Önceki slayta git">Önceki</button>
+        <button class="control-btn" id="next-btn" aria-label="Sonraki slayta git">Sonraki</button>
+    </div>
+    <div class="slide-number" id="slide-number">1 / 11</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const slides = document.querySelectorAll('.slide');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const slideNumber = document.getElementById('slide-number');
+            let currentSlide = 0;
+
+            function updateSlideNumber() {
+                slideNumber.textContent = `${currentSlide + 1} / ${slides.length}`;
+            }
+
+            function updateButtons() {
+                prevBtn.disabled = currentSlide === 0;
+                nextBtn.disabled = currentSlide === slides.length - 1;
+            }
+
+            function showSlide(n) {
+                slides.forEach(slide => slide.classList.remove('active'));
+                slides[n].classList.add('active');
+                currentSlide = n;
+                updateSlideNumber();
+                updateButtons();
+            }
+
+            function nextSlide() {
+                if (currentSlide < slides.length - 1) {
+                    showSlide(currentSlide + 1);
+                }
+            }
+
+            function prevSlide() {
+                if (currentSlide > 0) {
+                    showSlide(currentSlide - 1);
+                }
+            }
+
+            nextBtn.addEventListener('click', nextSlide);
+            prevBtn.addEventListener('click', prevSlide);
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowRight' || e.key === ' ') {
+                    nextSlide();
+                } else if (e.key === 'ArrowLeft') {
+                    prevSlide();
+                }
+            });
+
+            // İlk slaytı göster ve butonları güncelle
+            showSlide(0);
+
+            // Liste öğelerine ve kartlara animasyon sırası ekle
+            slides.forEach(slide => {
+                const listItems = slide.querySelectorAll('li, .card');
+                listItems.forEach((item, index) => {
+                    item.style.setProperty('--animation-order', index + 1);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+[33mcommit 88b50510f15cda35f0e0f81fde33b402a11b8032[m[33m ([m[1;36mHEAD[m[33m)[m
+Author: Salih Erkam DOĞRUBAK <salih.dogrubak@normfasteners.com>
+Date:   Thu Jun 19 12:56:28 2025 +0300
+
+    Dayım düzeltmesi1
+
+[33mcommit 12d5f0d9e67dfcf08b3d96a902f97b329791bfc4[m
+Author: Salih DOGRUBAK <economist.sed@gmail.com>
+Date:   Wed Jun 18 15:55:56 2025 +0300
+
+    task_app2.py
+
+[33mcommit 998711dec2d53f6d7e54469777efaf3221e76869[m
+Author: Salih DOGRUBAK <economist.sed@gmail.com>
+Date:   Wed Jun 18 15:43:43 2025 +0300
+
+    task_app2.py
+
+[33mcommit 496cc89a256725dce8f3f75ab66d062c0054b758[m
+Author: Salih DOGRUBAK <economist.sed@gmail.com>
+Date:   Wed Jun 18 15:40:19 2025 +0300
+
+    requirements.txt
+
+[33mcommit 0029398e74fa284ce26dc2e94903e87d7435b4ae[m
+Author: Salih Erkam DOĞRUBAK <salih.dogrubak@normfasteners.com>
+Date:   Wed Jun 18 15:24:55 2025 +0300
+
+    secrets değişti
+
+[33mcommit ff811c69f9445a5491367d0e31363ab47338a9bc[m
+Author: Salih Erkam DOĞRUBAK <salih.dogrubak@normfasteners.com>
+Date:   Wed Jun 18 15:08:46 2025 +0300
+
+    [gcp_service_account] eklendi
+
+[33mcommit 5b61b4ee37a7ef5fb738d2e01bc124d2b833b32d[m
+Author: Salih Erkam DOĞRUBAK <salih.dogrubak@normfasteners.com>
+Date:   Wed Jun 18 14:58:41 2025 +0300
+
+    get_spreadsheet_client fonksiyonunuzu şu şekilde düzeltin:
+
+[33mcommit cf855a3ab3778020345b9892ee9d3663eb326e84[m
+Merge: e3b1f95 dbc2f95
+Author: Salih Erkam DOĞRUBAK <salih.dogrubak@normfasteners.com>
+Date:   Tue Jun 3 14:53:49 2025 +0300
+
+    Merge branch 'main' of https://github.com/salihed/taskly
+
+[33mcommit e3b1f95254497e94153e6e6920d270d3ff41eef5[m
+Author: Salih Erkam DOĞRUBAK <salih.dogrubak@normfasteners.com>
+Date:   Tue Jun 3 14:49:31 2025 +0300
+
+    google cloud eklendi
+
+[33mcommit dbc2f95bee03cb1b0836ca31e04cd90513f92dee[m
+Author: Salih DOGRUBAK <economist.sed@gmail.com>
+Date:   Tue Jun 3 14:33:20 2025 +0300
+
+    Added Dev Container Folder
+
+[33mcommit 2d9f521580df35f6b04e59153f69c7dc07544a5a[m
+Author: Salih Erkam DOĞRUBAK <salih.dogrubak@normfasteners.com>
+Date:   Tue Jun 3 14:02:26 2025 +0300
+
+    .JSON dosyası atıldı
+
+[33mcommit f31031b8100f21f41f85eff7f129418b194ffac3[m
+Author: Salih Erkam DOĞRUBAK <salih.dogrubak@normfasteners.com>
+Date:   Tue Jun 3 13:56:29 2025 +0300
+
+    İlk Streamlit uygulaması ve veri dosyaları
+
+[33mcommit 8c5dbce5e54c6f20978f3e1a3447d5be7ad6ee9f[m
+Author: Salih Erkam DOĞRUBAK <salih.dogrubak@normfasteners.com>
+Date:   Tue Jun 3 13:54:28 2025 +0300
+
+    first commit

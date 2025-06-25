@@ -1,0 +1,700 @@
+import streamlit as st
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+import pandas as pd
+from datetime import datetime, timedelta
+import re
+
+# --- Streamlit Sayfa Ayarları ---
+st.set_page_config(
+    page_title="Görev Takip Sistemi",
+    page_icon="📋",
+    layout="wide"
+)
+
+# --- Google Sheets Yetkilendirme ---
+credentials = service_account.Credentials.from_service_account_info(
+    st.secrets["google_service_account"],
+    scopes=["https://www.googleapis.com/auth/spreadsheets"]
+)
+service = build("sheets", "v4", credentials=credentials)
+
+# --- Ayarlar ---
+SHEET_ID = st.secrets["spreadsheet"]["id"]
+SHEET_NAME = "Tasks"
+
+# --- Google Sheets Fonksiyonları ---
+def read_sheet(range_):
+    try:
+        result = service.spreadsheets().values().get(
+            spreadsheetId=SHEET_ID,
+            range=range_
+        ).execute()
+        values = result.get("values", [])
+        if not values:
+            return pd.DataFrame()
+        
+        # İlk satır başlık satırı
+        headers = values[0] if values else []
+        data_rows = values[1:] if len(values) > 1 else []
+        
+        # Eğer veri yoksa boş DataFrame döndür
+        if not data_rows:
+            return pd.DataFrame(columns=headers if headers else ["ID", "Başlık", "Periyot", "Başlangıç Tarihi", "Sonraki Tarih", "Tamamlandı"])
+        
+        # Her satırı aynı uzunlukta yap (eksik sütunları boş string ile doldur)
+        max_cols = len(headers) if headers else 6
+        normalized_rows = []
+        for row in data_rows:
+            # Satırı normalize et
+            normalized_row = row[:]  # Kopyala
+            while len(normalized_row) < max_cols:
+                normalized_row.append("")
+            # Fazla sütunları kes
+            normalized_row = normalized_row[:max_cols]
+            normalized_rows.append(normalized_row)
+        
+        # DataFrame oluştur
+        if headers:
+            df = pd.DataFrame(normalized_rows, columns=headers)
+        else:
+            df = pd.DataFrame(normalized_rows, columns=["ID", "Başlık", "Periyot", "Başlangıç Tarihi", "Sonraki Tarih", "Tamamlandı"])
+        
+        return df
+        
+    except Exception as e:
+        st.error(f"Google Sheets'ten okunamadı: {e}")
+        return pd.DataFrame()
+
+def write_sheet(range_name, values):
+    try:
+        # NaN değerlerini boş string ile değiştir
+        clean_values = []
+        for row in values:
+            clean_row = []
+            for cell in row:
+                if pd.isna(cell) or cell == 'NaN' or str(cell) == 'nan':
+                    clean_row.append("")
+                else:
+                    clean_row.append(str(cell))
+            clean_values.append(clean_row)
+        
+        service.spreadsheets().values().update(
+            spreadsheetId=SHEET_ID,
+            range=range_name,
+            valueInputOption="USER_ENTERED",
+            body={"values": clean_values}
+        ).execute()
+    except Exception as e:
+        st.error(f"Google Sheets'e yazılamadı: {e}")
+        raise
+
+def save_tasks_to_sheet(df):
+    # DataFrame'deki NaN değerlerini boş string ile değiştir
+    df_clean = df.fillna("")
+    values = [df_clean.columns.tolist()] + df_clean.values.tolist()
+    write_sheet(f"{SHEET_NAME}!A1", values)
+
+@st.cache_data(ttl=60)
+def load_tasks():
+    df = read_sheet(f"{SHEET_NAME}!A1:Z1000")
+    
+    # Gerekli sütunları kontrol et ve ekle
+    required_columns = ["ID", "Başlık", "Periyot", "Başlangıç Tarihi", "Sonraki Tarih", "Tamamlandı"]
+    
+    if df.empty:
+        # Boş DataFrame için tüm sütunları oluştur
+        df = pd.DataFrame(columns=required_columns)
+    else:
+        # Eksik sütunları ekle
+        for col in required_columns:
+            if col not in df.columns:
+                df[col] = ""
+        
+        # Sadece gerekli sütunları tut (sıralamayı koru)
+        df = df[required_columns]
+        
+        # NaN değerlerini boş string ile değiştir
+        df = df.fillna("")
+    
+    return df
+
+# --- Tarih Hesaplama ---
+def hesapla_sonraki_tarih(baslangic, periyot):
+    try:
+        if not baslangic or baslangic == "":
+            return ""
+        
+        start_date = datetime.strptime(baslangic, "%Y-%m-%d")
+        if periyot == "Haftalık":
+            return (start_date + timedelta(weeks=1)).strftime("%Y-%m-%d")
+        elif periyot == "Aylık":
+            return (start_date + timedelta(days=30)).strftime("%Y-%m-%d")
+        elif periyot == "Günlük":
+            return (start_date + timedelta(days=1)).strftime("%Y-%m-%d")
+        elif periyot == "Tek Seferlik":
+            return baslangic  # Tek seferlik görevler için aynı tarihi kullan
+        else:
+            return ""
+    except Exception as e:
+        st.error(f"Tarih hesaplama hatası: {e}")
+        return ""
+
+# --- Görev Ekle ---
+def yeni_gorev_ekle(df):
+    with st.form("Yeni Görev"):
+        st.subheader("Yeni Görev Ekle")
+        baslik = st.text_input("Görev Başlığı")
+        periyot = st.selectbox("Periyot", ["Günlük", "Haftalık", "Aylık", "Tek Seferlik"])
+        baslangic = st.date_input("Başlangıç Tarihi", value=datetime.today())
+        submitted = st.form_submit_button("Ekle")
+        
+        if submitted and baslik:
+            try:
+                # Yeni görev ID'si oluştur
+                if df.empty:
+                    new_id = "1"
+                else:
+                    # Mevcut ID'leri sayısal olarak sırala ve en büyüğüne 1 ekle
+                    existing_ids = [int(id_val) for id_val in df["ID"].tolist() if str(id_val).isdigit()]
+                    new_id = str(max(existing_ids) + 1) if existing_ids else "1"
+                
+                baslangic_str = baslangic.strftime("%Y-%m-%d")
+                sonraki_tarih = hesapla_sonraki_tarih(baslangic_str, periyot)
+                
+                yeni = {
+                    "ID": new_id,
+                    "Başlık": baslik,
+                    "Periyot": periyot,
+                    "Başlangıç Tarihi": baslangic_str,
+                    "Sonraki Tarih": sonraki_tarih,
+                    "Tamamlandı": ""
+                }
+                
+                # DataFrame'e yeni satır ekle
+                new_df = pd.concat([df, pd.DataFrame([yeni])], ignore_index=True)
+                
+                # Google Sheets'e kaydet
+                save_tasks_to_sheet(new_df)
+                st.success("Görev başarıyla eklendi!")
+                
+                # Cache'i temizle
+                st.cache_data.clear()
+                st.rerun()
+                
+            except Exception as e:
+                st.error(f"Görev eklenirken hata oluştu: {e}")
+
+# --- Ana Uygulama ---
+st.title("📋 Görev Takip Sistemi")
+
+# Debug: Sheets yapısını kontrol et
+with st.expander("🔧 Debug - Sheets Yapısı"):
+    if st.button("Sheets Yapısını Kontrol Et"):
+        try:
+            result = service.spreadsheets().values().get(
+                spreadsheetId=SHEET_ID,
+                range=f"{SHEET_NAME}!A1:Z1000"
+            ).execute()
+            values = result.get("values", [])
+            
+            if values:
+                st.write("**Başlık satırı:**", values[0])
+                st.write("**Toplam satır sayısı:**", len(values))
+                st.write("**İlk veri satırı:**", values[1] if len(values) > 1 else "Veri yok")
+                st.write("**Sütun sayısı:**", len(values[0]) if values else 0)
+            else:
+                st.write("Sheets boş görünüyor.")
+        except Exception as e:
+            st.error(f"Debug hatası: {e}")
+
+try:
+    df = load_tasks()
+    
+    # Görevleri Göster
+    st.subheader("Bu Hafta Yapılacaklar")
+    bugun = datetime.today().date()
+    hafta_sonu = bugun + timedelta(days=(6 - bugun.weekday()))
+    
+    # Tarih filtresi uygula
+    if not df.empty:
+        df_filtered = df[df["Sonraki Tarih"].apply(
+            lambda x: (
+                bool(re.match(r"\d{4}-\d{2}-\d{2}", str(x))) and 
+                bugun <= datetime.strptime(str(x), "%Y-%m-%d").date() <= hafta_sonu
+            ) if x and str(x) != "" else False
+        )]
+        
+        if not df_filtered.empty:
+            for i, row in df_filtered.iterrows():
+                col1, col2 = st.columns([6, 1])
+                col1.markdown(f"**{row['Başlık']}** - _{row['Sonraki Tarih']}_")
+                
+                if col2.checkbox("Tamamla", key=f"cb_{i}"):
+                    try:
+                        # Görevi tamamlandı olarak işaretle
+                        df.at[i, "Tamamlandı"] = datetime.today().strftime("%Y-%m-%d")
+                        
+                        # Eğer periyodik görevse sonraki tarihi hesapla
+                        if df.at[i, "Periyot"] != "Tek Seferlik":
+                            df.at[i, "Sonraki Tarih"] = hesapla_sonraki_tarih(
+                                df.at[i, "Sonraki Tarih"], 
+                                df.at[i, "Periyot"]
+                            )
+                        
+                        # Değişiklikleri kaydet
+                        save_tasks_to_sheet(df)
+                        st.success("Görev tamamlandı ve tekrar planlandı.")
+                        st.cache_data.clear()
+                        st.rerun()
+                        
+                    except Exception as e:
+                        st.error(f"Görev tamamlanırken hata oluştu: {e}")
+        else:
+            st.info("Bu hafta için planlanan görev yok.")
+    else:
+        st.info("Henüz görev eklenmemiş.")
+    
+    # Yeni görev ekle
+    st.divider()
+    yeni_gorev_ekle(df)
+    
+    # Görev Listesi
+    with st.expander("📖 Tüm Görevler (Geçmiş dahil)"):
+        if not df.empty:
+            st.dataframe(df, use_container_width=True)
+        else:
+            st.info("Henüz görev yok.")
+
+except Exception as e:
+    st.error(f"Uygulama başlatılırken hata oluştu: {e}")
+    st.info("Lütfen Google Sheets bağlantısını ve kimlik bilgilerini kontrol edin.")
+
+
+
+ ##Kod da Başlangıç Tarihi yerine Termin Tarihi kullanalım. Sonraki Tarih kısmına gerek yok. Çağrı açıldığında mail atsın. Termin yaklaştığında 1 gün kala açık ise başlık yani durum bu durumda mail atsın. geciken durumda ise hergün mail atsın geciken her gün..
+
+ v1: 
+ import streamlit as st
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+import pandas as pd
+from datetime import datetime, timedelta
+import re
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+# --- Streamlit Sayfa Ayarları ---
+st.set_page_config(
+    page_title="Görev Takip Sistemi",
+    page_icon="📋",
+    layout="wide"
+)
+
+# --- Google Sheets Yetkilendirme ---
+credentials = service_account.Credentials.from_service_account_info(
+    st.secrets["google_service_account"],
+    scopes=["https://www.googleapis.com/auth/spreadsheets"]
+)
+service = build("sheets", "v4", credentials=credentials)
+
+# --- Ayarlar ---
+SHEET_ID = st.secrets["spreadsheet"]["id"]
+SHEET_NAME = "Tasks"
+
+# --- E-mail Ayarları ---
+def send_email(to_email, subject, body):
+    try:
+        # E-mail ayarlarını secrets'tan al
+        smtp_server = st.secrets.get("email", {}).get("smtp_server", "smtp.gmail.com")
+        smtp_port = st.secrets.get("email", {}).get("smtp_port", 587)
+        from_email = st.secrets.get("email", {}).get("from_email", "")
+        password = st.secrets.get("email", {}).get("password", "")
+        
+        if not from_email or not password:
+            st.warning("E-mail ayarları eksik. Bildirim gönderilemedi.")
+            return False
+        
+        msg = MIMEMultipart()
+        msg['From'] = from_email
+        msg['To'] = to_email
+        msg['Subject'] = subject
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        
+        server = smtplib.SMTP(smtp_server, smtp_port)
+        server.starttls()
+        server.login(from_email, password)
+        server.send_message(msg)
+        server.quit()
+        return True
+    except Exception as e:
+        st.error(f"E-mail gönderme hatası: {e}")
+        return False
+
+# --- Google Sheets Fonksiyonları ---
+def read_sheet(range_):
+    try:
+        result = service.spreadsheets().values().get(
+            spreadsheetId=SHEET_ID,
+            range=range_
+        ).execute()
+        values = result.get("values", [])
+        if not values:
+            return pd.DataFrame()
+        
+        headers = values[0] if values else []
+        data_rows = values[1:] if len(values) > 1 else []
+        
+        if not data_rows:
+            return pd.DataFrame(columns=headers if headers else get_required_columns())
+        
+        max_cols = len(headers) if headers else len(get_required_columns())
+        normalized_rows = []
+        for row in data_rows:
+            normalized_row = row[:]
+            while len(normalized_row) < max_cols:
+                normalized_row.append("")
+            normalized_row = normalized_row[:max_cols]
+            normalized_rows.append(normalized_row)
+        
+        if headers:
+            df = pd.DataFrame(normalized_rows, columns=headers)
+        else:
+            df = pd.DataFrame(normalized_rows, columns=get_required_columns())
+        
+        return df
+        
+    except Exception as e:
+        st.error(f"Google Sheets'ten okunamadı: {e}")
+        return pd.DataFrame()
+
+def get_required_columns():
+    return ["ID", "Başlık", "Sorumlu", "Sorumlu Email", "Periyot", "Başlangıç Tarihi", "Sonraki Tarih", "Durum", "Açıklama", "Oluşturulma Tarihi", "Tamamlanma Tarihi"]
+
+def write_sheet(range_name, values):
+    try:
+        clean_values = []
+        for row in values:
+            clean_row = []
+            for cell in row:
+                if pd.isna(cell) or cell == 'NaN' or str(cell) == 'nan':
+                    clean_row.append("")
+                else:
+                    clean_row.append(str(cell))
+            clean_values.append(clean_row)
+        
+        service.spreadsheets().values().update(
+            spreadsheetId=SHEET_ID,
+            range=range_name,
+            valueInputOption="USER_ENTERED",
+            body={"values": clean_values}
+        ).execute()
+    except Exception as e:
+        st.error(f"Google Sheets'e yazılamadı: {e}")
+        raise
+
+def save_tasks_to_sheet(df):
+    df_clean = df.fillna("")
+    values = [df_clean.columns.tolist()] + df_clean.values.tolist()
+    write_sheet(f"{SHEET_NAME}!A1", values)
+
+@st.cache_data(ttl=60)
+def load_tasks():
+    df = read_sheet(f"{SHEET_NAME}!A1:Z1000")
+    required_columns = get_required_columns()
+    
+    if df.empty:
+        df = pd.DataFrame(columns=required_columns)
+    else:
+        for col in required_columns:
+            if col not in df.columns:
+                df[col] = ""
+        df = df[required_columns]
+        df = df.fillna("")
+    
+    return df
+
+# --- Tarih Hesaplama ---
+def hesapla_sonraki_tarih(baslangic, periyot):
+    try:
+        if not baslangic or baslangic == "":
+            return ""
+        
+        start_date = datetime.strptime(baslangic, "%Y-%m-%d")
+        if periyot == "Haftalık":
+            return (start_date + timedelta(weeks=1)).strftime("%Y-%m-%d")
+        elif periyot == "Aylık":
+            return (start_date + timedelta(days=30)).strftime("%Y-%m-%d")
+        elif periyot == "Günlük":
+            return (start_date + timedelta(days=1)).strftime("%Y-%m-%d")
+        elif periyot == "Tek Seferlik":
+            return baslangic
+        else:
+            return ""
+    except Exception as e:
+        st.error(f"Tarih hesaplama hatası: {e}")
+        return ""
+
+# --- Tarih Filtresi ---
+def get_date_filter_options():
+    bugun = datetime.today().date()
+    return {
+        "Geciken": lambda x: datetime.strptime(x, "%Y-%m-%d").date() < bugun if x else False,
+        "Bu Hafta": lambda x: bugun <= datetime.strptime(x, "%Y-%m-%d").date() <= bugun + timedelta(days=(6 - bugun.weekday())) if x else False,
+        "2 Hafta İçinde": lambda x: bugun <= datetime.strptime(x, "%Y-%m-%d").date() <= bugun + timedelta(weeks=2) if x else False,
+        "1 Ay İçinde": lambda x: bugun <= datetime.strptime(x, "%Y-%m-%d").date() <= bugun + timedelta(days=30) if x else False,
+        "3 Ay İçinde": lambda x: bugun <= datetime.strptime(x, "%Y-%m-%d").date() <= bugun + timedelta(days=90) if x else False,
+        "Sonrası": lambda x: datetime.strptime(x, "%Y-%m-%d").date() > bugun + timedelta(days=90) if x else False,
+        "Tümü": lambda x: True
+    }
+
+# --- E-mail Bildirimleri ---
+def check_and_send_notifications(df):
+    bugun = datetime.today().date()
+    
+    for _, row in df.iterrows():
+        if row["Durum"] not in ["Aktif", "Beklemede"] or not row["Sorumlu Email"]:
+            continue
+        
+        try:
+            gorev_tarihi = datetime.strptime(row["Sonraki Tarih"], "%Y-%m-%d").date()
+            
+            # Termin geçen görevler
+            if gorev_tarihi < bugun:
+                subject = f"⚠️ Termin Geçen Görev: {row['Başlık']}"
+                body = f"""
+Merhaba {row['Sorumlu']},
+
+Aşağıdaki görevinizin termini geçmiştir:
+
+Görev: {row['Başlık']}
+Termin: {row['Sonraki Tarih']}
+Açıklama: {row['Açıklama']}
+
+Lütfen en kısa sürede tamamlayınız.
+
+İyi çalışmalar!
+"""
+                send_email(row["Sorumlu Email"], subject, body)
+            
+            # Bugün son gün olan görevler
+            elif gorev_tarihi == bugun:
+                subject = f"🔔 Son Gün: {row['Başlık']}"
+                body = f"""
+Merhaba {row['Sorumlu']},
+
+Aşağıdaki görevinizin son günü bugündür:
+
+Görev: {row['Başlık']}
+Termin: {row['Sonraki Tarih']}
+Açıklama: {row['Açıklama']}
+
+Lütfen bugün içinde tamamlamayı unutmayınız.
+
+İyi çalışmalar!
+"""
+                send_email(row["Sorumlu Email"], subject, body)
+        
+        except:
+            continue
+
+# --- Görev Ekle ---
+def yeni_gorev_ekle(df):
+    with st.form("Yeni Görev"):
+        st.subheader("🆕 Yeni Görev Ekle")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            baslik = st.text_input("Görev Başlığı *")
+            sorumlu = st.text_input("Sorumlu Kişi *")
+            periyot = st.selectbox("Periyot", ["Günlük", "Haftalık", "Aylık", "Tek Seferlik"])
+        
+        with col2:
+            sorumlu_email = st.text_input("Sorumlu Email *")
+            baslangic = st.date_input("Başlangıç Tarihi", value=datetime.today())
+            durum = st.selectbox("Durum", ["Aktif", "Beklemede", "Tamamlandı", "İptal"])
+        
+        aciklama = st.text_area("Açıklama")
+        submitted = st.form_submit_button("Ekle")
+        
+        if submitted:
+            if not baslik or not sorumlu or not sorumlu_email:
+                st.error("Zorunlu alanları doldurunuz!")
+                return
+            
+            try:
+                new_id = str(len(df) + 1) if not df.empty else "1"
+                baslangic_str = baslangic.strftime("%Y-%m-%d")
+                sonraki_tarih = hesapla_sonraki_tarih(baslangic_str, periyot)
+                
+                yeni = {
+                    "ID": new_id,
+                    "Başlık": baslik,
+                    "Sorumlu": sorumlu,
+                    "Sorumlu Email": sorumlu_email,
+                    "Periyot": periyot,
+                    "Başlangıç Tarihi": baslangic_str,
+                    "Sonraki Tarih": sonraki_tarih,
+                    "Durum": durum,
+                    "Açıklama": aciklama,
+                    "Oluşturulma Tarihi": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                    "Tamamlanma Tarihi": ""
+                }
+                
+                new_df = pd.concat([df, pd.DataFrame([yeni])], ignore_index=True)
+                save_tasks_to_sheet(new_df)
+                st.success("Görev başarıyla eklendi!")
+                st.cache_data.clear()
+                st.rerun()
+                
+            except Exception as e:
+                st.error(f"Görev eklenirken hata oluştu: {e}")
+
+# --- Görev Düzenle ---
+def gorev_duzenle(df, gorev_id):
+    gorev = df[df["ID"] == str(gorev_id)].iloc[0]
+    
+    with st.form(f"Düzenle_{gorev_id}"):
+        st.subheader(f"✏️ Görev Düzenle - {gorev['Başlık']}")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            baslik = st.text_input("Görev Başlığı", value=gorev["Başlık"])
+            sorumlu = st.text_input("Sorumlu Kişi", value=gorev["Sorumlu"])
+            periyot = st.selectbox("Periyot", ["Günlük", "Haftalık", "Aylık", "Tek Seferlik"], 
+                                 index=["Günlük", "Haftalık", "Aylık", "Tek Seferlik"].index(gorev["Periyot"]) if gorev["Periyot"] in ["Günlük", "Haftalık", "Aylık", "Tek Seferlik"] else 0)
+        
+        with col2:
+            sorumlu_email = st.text_input("Sorumlu Email", value=gorev["Sorumlu Email"])
+            sonraki_tarih = st.date_input("Sonraki Tarih", 
+                                        value=datetime.strptime(gorev["Sonraki Tarih"], "%Y-%m-%d") if gorev["Sonraki Tarih"] else datetime.today())
+            durum = st.selectbox("Durum", ["Aktif", "Beklemede", "Tamamlandı", "İptal"],
+                               index=["Aktif", "Beklemede", "Tamamlandı", "İptal"].index(gorev["Durum"]) if gorev["Durum"] in ["Aktif", "Beklemede", "Tamamlandı", "İptal"] else 0)
+        
+        aciklama = st.text_area("Açıklama", value=gorev["Açıklama"])
+        submitted = st.form_submit_button("Güncelle")
+        
+        if submitted:
+            try:
+                idx = df[df["ID"] == str(gorev_id)].index[0]
+                df.at[idx, "Başlık"] = baslik
+                df.at[idx, "Sorumlu"] = sorumlu
+                df.at[idx, "Sorumlu Email"] = sorumlu_email
+                df.at[idx, "Periyot"] = periyot
+                df.at[idx, "Sonraki Tarih"] = sonraki_tarih.strftime("%Y-%m-%d")
+                df.at[idx, "Durum"] = durum
+                df.at[idx, "Açıklama"] = aciklama
+                
+                if durum == "Tamamlandı" and not gorev["Tamamlanma Tarihi"]:
+                    df.at[idx, "Tamamlanma Tarihi"] = datetime.now().strftime("%Y-%m-%d %H:%M")
+                
+                save_tasks_to_sheet(df)
+                st.success("Görev başarıyla güncellendi!")
+                st.cache_data.clear()
+                st.rerun()
+                
+            except Exception as e:
+                st.error(f"Görev güncellenirken hata oluştu: {e}")
+
+# --- Ana Uygulama ---
+st.title("📋 Görev Takip Sistemi")
+
+# Bildirim kontrolü
+if st.button("📧 Bildirimleri Kontrol Et"):
+    df = load_tasks()
+    check_and_send_notifications(df)
+    st.success("Bildirimler kontrol edildi!")
+
+try:
+    df = load_tasks()
+    
+    # Filtre seçimi
+    st.subheader("📅 Görev Filtreleri")
+    filter_options = get_date_filter_options()
+    selected_filter = st.selectbox("Zaman Filtresi", list(filter_options.keys()))
+    
+    # Durum filtresi
+    durum_filter = st.multiselect("Durum Filtresi", ["Aktif", "Beklemede", "Tamamlandı", "İptal"], 
+                                default=["Aktif", "Beklemede"])
+    
+    # Filtrelenmiş görevler
+    if not df.empty:
+        # Tarih filtresi uygula
+        if selected_filter != "Tümü":
+            df_filtered = df[df["Sonraki Tarih"].apply(filter_options[selected_filter])]
+        else:
+            df_filtered = df.copy()
+        
+        # Durum filtresi uygula
+        if durum_filter:
+            df_filtered = df_filtered[df_filtered["Durum"].isin(durum_filter)]
+        
+        st.subheader(f"📋 {selected_filter} - Görevler ({len(df_filtered)} adet)")
+        
+        if not df_filtered.empty:
+            for i, row in df_filtered.iterrows():
+                with st.expander(f"📝 {row['Başlık']} - {row['Sorumlu']} ({row['Sonraki Tarih']})"):
+                    col1, col2, col3 = st.columns([2, 1, 1])
+                    
+                    with col1:
+                        st.write(f"**Durum:** {row['Durum']}")
+                        st.write(f"**Periyot:** {row['Periyot']}")
+                        st.write(f"**Açıklama:** {row['Açıklama']}")
+                        st.write(f"**Email:** {row['Sorumlu Email']}")
+                    
+                    with col2:
+                        if st.button("✏️ Düzenle", key=f"edit_{row['ID']}"):
+                            st.session_state[f"edit_mode_{row['ID']}"] = True
+                        
+                        if row['Durum'] in ['Aktif', 'Beklemede']:
+                            if st.button("✅ Tamamla", key=f"complete_{row['ID']}"):
+                                idx = df[df["ID"] == row['ID']].index[0]
+                                df.at[idx, "Durum"] = "Tamamlandı"
+                                df.at[idx, "Tamamlanma Tarihi"] = datetime.now().strftime("%Y-%m-%d %H:%M")
+                                
+                                # Periyodik görevse sonraki tarihi hesapla
+                                if row['Periyot'] != 'Tek Seferlik':
+                                    df.at[idx, "Sonraki Tarih"] = hesapla_sonraki_tarih(row['Sonraki Tarih'], row['Periyot'])
+                                    df.at[idx, "Durum"] = "Aktif"
+                                    df.at[idx, "Tamamlanma Tarihi"] = ""
+                                
+                                save_tasks_to_sheet(df)
+                                st.success("Görev tamamlandı!")
+                                st.cache_data.clear()
+                                st.rerun()
+                    
+                    with col3:
+                        if st.button("❌ İptal", key=f"cancel_{row['ID']}"):
+                            idx = df[df["ID"] == row['ID']].index[0]
+                            df.at[idx, "Durum"] = "İptal"
+                            save_tasks_to_sheet(df)
+                            st.success("Görev iptal edildi!")
+                            st.cache_data.clear()
+                            st.rerun()
+                    
+                    # Düzenleme modu
+                    if st.session_state.get(f"edit_mode_{row['ID']}", False):
+                        gorev_duzenle(df, row['ID'])
+                        if st.button("🔙 Düzenlemeyi İptal", key=f"cancel_edit_{row['ID']}"):
+                            st.session_state[f"edit_mode_{row['ID']}"] = False
+                            st.rerun()
+        else:
+            st.info(f"{selected_filter} kategorisinde görev bulunamadı.")
+    else:
+        st.info("Henüz görev eklenmemiş.")
+    
+    # Yeni görev ekle
+    st.divider()
+    yeni_gorev_ekle(df)
+    
+    # Görev Listesi
+    with st.expander("📊 Tüm Görevler - Detaylı Tablo"):
+        if not df.empty:
+            st.dataframe(df, use_container_width=True)
+        else:
+            st.info("Henüz görev yok.")
+
+except Exception as e:
+    st.error(f"Uygulama başlatılırken hata oluştu: {e}")
+    st.info("Lütfen Google Sheets bağlantısını ve kimlik bilgilerini kontrol edin.")
